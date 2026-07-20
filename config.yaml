@@ -1,0 +1,75 @@
+# ===========================================
+# V12 录播唱歌片段自动提取系统 - 配置文件
+# ===========================================
+# 路径说明:
+#   - 相对路径以本文件所在目录为基准
+#   - 也可使用绝对路径（如 /home/user/videos 或 D:/videos）
+#   - 环境变量优先级最高，可覆盖此处配置:
+#       V12_SOURCE_DIR, V12_OUTPUT_DIR, V12_LYRICS_DB_DIR,
+#       FFMPEG_PATH, FFPROBE_PATH
+
+# 录播来源目录（存放录播视频的文件夹）
+source_dir: "./source_videos"
+
+# 输出根目录（每个录播会在其下创建同名子文件夹）
+output_dir: "./output"
+
+# ffmpeg/ffprobe 路径（留空则从系统PATH查找）
+ffmpeg_path: ""
+ffprobe_path: ""
+
+# 日志级别: DEBUG / INFO / WARNING / ERROR
+log_level: "INFO"
+
+# 自动跳过已处理的录播（检测到输出目录有完整结果则跳过）
+skip_processed: true
+
+# 为每个录播生成Markdown处理报告
+generate_report: true
+
+# 支持的视频扩展名
+video_extensions:
+  - ".flv"
+  - ".mp4"
+  - ".mkv"
+  - ".avi"
+  - ".ts"
+
+# ---------- 唱歌片段检测 ----------
+extractor:
+  sample_rate: 11025
+  hop_length: 512
+  chunk_duration: 600        # 分块时长（秒）
+  min_singing_duration: 60   # 最短唱歌片段（秒）
+  max_gap: 15               # 合并间隔上限（秒）
+  threshold: 0.5            # 唱歌判定阈值
+  smooth_size: 31            # 中值滤波窗口
+  refine_threshold: 0.4     # 边界精修阈值
+  look_back: 3.0            # 起点向前搜索（秒）
+  look_forward: 3.0          # 终点向后搜索（秒）
+  weights:
+    pitch_ratio: 0.30
+    stability: 0.25
+    continuity: 0.25
+    energy_stability: 0.20
+
+# ---------- Whisper 歌词转录 ----------
+recognizer:
+  model: "large-v3-turbo"
+  language: "zh"
+  no_speech_threshold: 0.6
+  compression_ratio_threshold: 2.4
+  initial_prompt: "以下是普通话的句子。"
+
+# ---------- 歌词匹配 ----------
+matcher:
+  lyrics_db_dir: "./lyrics_db"
+  threshold: 0.15            # 匹配阈值（越高越严格）
+  top_k: 3                   # 返回候选数量
+  max_features: 5000          # TF-IDF最大特征数
+
+# ---------- 歌词拉取 ----------
+lyrics_fetcher:
+  request_interval: 0.3      # 请求间隔（秒）
+  timeout: 30                # 超时（秒）
+  max_retries: 3             # 最大重试次数
